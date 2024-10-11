@@ -5,35 +5,10 @@ import pandas as pd
 import shap
 import matplotlib.pyplot as plt
 
-
-# In[33]:
-
-
-get_ipython().system('pip install streamlit')
-
-
-# In[35]:
-
-
-get_ipython().system('pip install shap')
-
-
-# In[37]:
-
-
-get_ipython().system('pip install --upgrade jupyter ipywidgets')
-
-
-# In[45]:
-
-
 # Load the model
 model = joblib.load('XGBoost.pkl')
 
-
-# In[46]:
-
-
+# Define options for user input
 sex_options = {1: 'Male', 2: 'Female'}
 race_options = {1: 'Hispanic', 2: 'White only, non-Hispanic', 3: 'Black only, non-Hispanic', 4: 'Other Multiracial'}
 education_options = {1: 'Did not graduate High School', 2: 'Graduate High School'}
@@ -45,24 +20,10 @@ diabetes_options = {1: 'Yes', 2: 'No'}
 heart_disease_options = {1: 'Yes', 2: 'No'}
 smoking_options = {1: 'Non-smoker', 2: 'Only combustible cigarettes', 3: 'Only e-cigarettes', 4: 'Both combustible cigarettes and e-cigarettes'}
 
+# User interface
+st.title("Stroke Risk Prediction")
 
-# In[47]:
-
-
-# 用户界面
-st.title("Stroke risk prediction")
-
-
-# In[37]:
-
-
-get_ipython().system('pip install streamlit')
-
-
-# In[48]:
-
-
-# 输入特征变量
+# Input features
 age65yr = st.selectbox("Age (65 years or older)", options=[1, 2], format_func=lambda x: "18≤age<65" if x == 1 else "≥65")
 sex = st.selectbox("Sex", options=list(sex_options.keys()), format_func=lambda x: sex_options[x])
 race = st.selectbox("Race", options=list(race_options.keys()), format_func=lambda x: race_options[x])
@@ -78,12 +39,8 @@ diabetes = st.selectbox("Diabetes", options=list(diabetes_options.keys()), forma
 total_heart = st.selectbox("Total Heart Disease", options=list(heart_disease_options.keys()), format_func=lambda x: heart_disease_options[x])
 smoking_type = st.selectbox("Type of Smoking", options=list(smoking_options.keys()), format_func=lambda x: smoking_options[x])
 
-
-# In[51]:
-
-
 if st.button("Predict Stroke Risk"):
-    # 构建输入数据
+    # Construct input data
     input_data = pd.DataFrame({
         'AGE65YR': [age65yr],
         'SEX': [sex],
@@ -101,65 +58,28 @@ if st.button("Predict Stroke Risk"):
         '吸烟类型': [smoking_type]
     })
 
-
-# In[55]:
-
-
-import pandas as pd
-import streamlit as st
-
-# 假设这些变量已经在其他地方定义
-age65yr = ...  # 用户输入或其他来源
-sex = ...      # 用户输入或其他来源
-race = ...     # 用户输入或其他来源
-educat = ...   # 用户输入或其他来源
-income = ...   # 用户输入或其他来源
-marital = ...  # 用户输入或其他来源
-exercise = ... # 用户输入或其他来源
-weight = ...   # 用户输入或其他来源
-bmi = ...      # 用户输入或其他来源
-alcohol = ...  # 用户输入或其他来源
-stroke = ...   # 用户输入或其他来源
-diabetes = ... # 用户输入或其他来源
-total_heart = ...  # 用户输入或其他来源
-smoking_type = ...  # 用户输入或其他来源
-
-if st.button("Predict Stroke Risk"):
-    # 构建输入数据
-    input_data = pd.DataFrame({
-        'AGE65YR': [age65yr],
-        'SEX': [sex],
-        'RACE': [race],
-        'EDUCAT': [educat],
-        'INCOME': [income],
-        'MARITAL': [marital],
-        'EXERCISE': [exercise],
-        'WEIGHT': [weight],
-        'BMI': [bmi],
-        'Alcohol': [alcohol],
-        'STROKE': [stroke],
-        'DIABETES': [diabetes],
-        'Total Heart': [total_heart],
-        '吸烟类型': [smoking_type]
-    })
-
-    # 进行预测
+    # Make prediction
     prediction = model.predict(input_data)
+    predicted_class = prediction[0]  # Assuming the model returns a single prediction
 
-    # 显示预测结果
+    # Calculate the probability (if your model can return probabilities)
+    probability = model.predict_proba(input_data)[:, 1][0] * 100  # Adjust index as needed
+
+    # Display prediction result
     if predicted_class == 1:
         advice = (            
             f"According to our model, you have a high risk of STROKE. "            
             f"The model predicts that your probability of having STROKE is {probability:.1f}%. "            
             "While this is just an estimate, it suggests that you may be at significant risk. "            
             "I recommend that you consult a cardiologist as soon as possible for further evaluation and "           
-            "to ensure you receive an accurate diagnosis and necessary treatment."        )
+            "to ensure you receive an accurate diagnosis and necessary treatment."        
+        )
     else:
         advice = (            
-            f"According to our model, you have a low risk of heart disease. "
-            f"The model predicts that your probability of not having heart disease is {probability:.1f}%. "
+            f"According to our model, you have a low risk of stroke. "
+            f"The model predicts that your probability of not having stroke is {probability:.1f}%. "
             "However, maintaining a healthy lifestyle is still very important. "           
-            "I recommend regular check-ups to monitor your heart health, "          
+            "I recommend regular check-ups to monitor your health, "          
             "and to seek medical advice promptly if you experience any symptoms." 
-     )
+        )
     st.write(advice)
