@@ -6,7 +6,7 @@ import shap
 import matplotlib.pyplot as plt
 
 # Load the model
-model = joblib.load(r"C:\Users\11147\XGBoost.pkl")
+model = joblib.load('XGBoost.pkl')
 
 # Define options for user input
 sex_options = {1: 'Male', 2: 'Female'}
